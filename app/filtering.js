@@ -804,7 +804,11 @@ function shouldIgnoreUrl (details) {
 }
 
 module.exports.isPrivate = (partition) => {
-  return !partition.startsWith('persist:')
+  const ses = session.fromPartition(partition)
+  if (!ses) {
+    return false
+  }
+  return ses.isOffTheRecord()
 }
 
 module.exports.init = (state, action, store) => {
