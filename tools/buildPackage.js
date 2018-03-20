@@ -72,6 +72,14 @@ if (channel !== 'dev') {
 }
 
 const buildDir = appName + '-' + process.platform + '-' + arch
+const torS3Prefix = 'https://s3.us-east-2.amazonaws.com/demo-tor-binaries/'
+
+var torURL = torS3Prefix + 'tor-' + process.platform
+if (isWindows) {
+  torURL += '.zip'
+}
+
+var torSigURL = torS3Prefix + 'tor-' + process.platform + '.sig'
 
 console.log('Writing buildConfig.js...')
 config.writeBuildConfig(
@@ -154,8 +162,25 @@ if (isLinux) {
   cmds.push('copy .\\res\\start-tile-150.png "' + path.join(buildDir, 'resources', 'start-tile-150.png') + '"')
   cmds.push('makensis.exe -DARCH=' + arch + ` res/${channel}/braveDefaults.nsi`)
   cmds.push('ncp ./app/extensions ' + path.join(buildDir, 'resources', 'extensions'))
+
   // Make sure the Brave.exe binary is squirrel aware so we get squirrel events and so that Squirrel doesn't auto create shortcuts.
   cmds.push(`"node_modules/rcedit/bin/rcedit.exe" ./${appName}-win32-` + arch + `/${appName}.exe --set-version-string "SquirrelAwareVersion" "1"`)
+}
+
+// Verify tor binaries and bundle with Brave
+var torPath
+if (isDarwin) {
+  torPath = path.join(buildDir, `${appName}.app`, 'Contents', 'Resources', 'extensions', 'bin')
+} else {
+  torPath = path.join(buildDir, 'resources', 'extensions', 'bin')
+}
+cmds.push('mkdirp ' + torPath)
+cmds.push('curl -o ' + path.join(torPath, 'tor') + ' ' + torURL)
+cmds.push('curl -o ' + path.join(torPath, 'tor-sig') + ' ' + torSigURL)
+cmds.push('gpg --verify ' + path.join(torPath, 'tor-sig') + ' ' + path.join(torPath, 'tor'))
+
+if (isWindows) {
+  cmds.push('unzip ' + path.join(torPath, 'tor') + ' -d ' + path.join(buildDir, 'resources', 'extensions', 'bin'))
 }
 
 if (isDarwin) {
