@@ -7,7 +7,6 @@ const um = require('@brave-intl/bat-usermodel')
 
 // Actions
 const appActions = require('../../../js/actions/appActions')
-const windowActions = require('../../../js/actions/windowActions')
 
 // State
 const userModelState = require('../../common/state/userModelState')
@@ -120,17 +119,20 @@ function randomKey (dictionary) {
 
 const goAheadAndShowTheAd = (windowId, categoryName, notificationText, notificationUrl) => {
   appActions.onUserModelDemoValue(`Ads shown: ${categoryName}`)
-  windowActions.onNativeNotificationOpen(
-      windowId,
-      `Brave Ad: ${categoryName}`,
+  appActions.nativeNotificationCreate(
+    windowId,
     {
-      body: notificationText,
+      title: `Brave Ad: ${categoryName}`,
+      message: notificationText,
+      sound: false,
+      timeout: 15,
       data: {
+        windowId,
         notificationUrl,
         notificationId: notificationTypes.ADS
       }
     }
-    )
+  )
 }
 
 const classifyPage = (state, action, windowId) => {
@@ -288,7 +290,8 @@ const getMethods = () => {
     checkReadyAdServe,
     recordUnIdle,
     serveAdNow,
-    changeAdFrequency
+    changeAdFrequency,
+    goAheadAndShowTheAd
 
   }
 
