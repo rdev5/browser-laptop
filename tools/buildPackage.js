@@ -7,6 +7,7 @@ var execute = require('./lib/execute')
 const ignoredPaths = require('./lib/ignoredPaths')
 const config = require('./lib/config')
 const path = require('path')
+const fs = require('fs')
 
 const isWindows = process.platform === 'win32'
 const isDarwin = process.platform === 'darwin'
@@ -174,7 +175,6 @@ cmds = cmds.concat([
 ])
 
 function BuildManifestFile () {
-  const fs = require('fs')
   const fileContents = fs.readFileSync('./res/Update.VisualElementsManifest.xml', 'utf8')
   const versionedFileContents = fileContents.replace(/{{braveVersion}}/g, 'app-' + VersionInfo.braveVersion)
   fs.writeFileSync('temp.VisualElementsManifest.xml', versionedFileContents, 'utf8')
@@ -208,8 +208,10 @@ if (isDarwin) {
 cmds.push('mkdirp ' + torPath)
 cmds.push('curl -o ' + path.join(torPath, 'tor') + ' ' + torURL)
 cmds.push('curl -o ' + path.join(torPath, 'tor-sig') + ' ' + torSigURL)
-cmds.push('echo ' + torVerificationPublicKey + ' | gpg --import')
+fs.writeFileSync('temp.asc', torVerificationPublicKey, 'utf8')
+cmds.push('gpg --import temp.asc')
 cmds.push('gpg --verify ' + path.join(torPath, 'tor-sig') + ' ' + path.join(torPath, 'tor'))
+cmds.push('rm -rf temp.asc')
 
 if (isWindows) {
   cmds.push('unzip ' + path.join(torPath, 'tor') + ' -d ' + path.join(buildDir, 'resources', 'extensions', 'bin'))
