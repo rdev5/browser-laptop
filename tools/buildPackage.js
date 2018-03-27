@@ -7,7 +7,6 @@ var execute = require('./lib/execute')
 const ignoredPaths = require('./lib/ignoredPaths')
 const config = require('./lib/config')
 const path = require('path')
-const fs = require('fs')
 
 const isWindows = process.platform === 'win32'
 const isDarwin = process.platform === 'darwin'
@@ -23,36 +22,6 @@ var env = {
 
 const channel = env.CHANNEL
 const ref = env.REF
-
-const torVerificationPublicKey = `-----BEGIN PGP PUBLIC KEY BLOCK-----
-
-mQINBFqrIn4BEADgqJTNhqw8B/T7huOm31dDzkqJEB8pIpcML35POcYs5CwOvGO2
-s2rzCh6Atys212CCZEMs4spWAReXux0KirKq0ON9N8modct2AcNS5bSdmyMhQehP
-wb1jt3bVX6nufJqrlYIf34LdHx3DAUhLr8bFSK9Hskt15Q5UyT0UKUfSl5t69zLf
-DFZObR0aHqltfuenFfquO6aUpXopyhd6L89Jsm/o7vME6vdG/TJ3U97AV5wwDlrH
-mRUWrXxgqcPrrKPJ0SdQ3cf36iPdvglsVC0m9LU6XzTph61gD1JnXmYmxmRtubYu
-wr9N2JB+aTxR3TsOn3hfpWVrLGME6wpFMkvRzVaHQc8PUJhVMmeZHXECr264/R9d
-PDCAFoqaAiXjhvDbtYK2iWTdos2WWFZ+SdfSQaNBv37nQ5UO2sZfa/iKwVzu7Xka
-VHCKckm37PBNQwVmwUjunTa3TpKE7Mxygm1v3dCofxCm+Eq9/4uyL6sVMMbtBiUI
-1rY9G8zyF8Z+n+jQmiMHtwk2pBp7lQf4bnSUrc401MQ2WOX67COU2DY4j4cUaGzi
-6/StRDUKX+3InXEaNymPYuelAK6iafh+TvOeH4nRfz/mmlL4deWZKeyuEgqZK6E3
-uCxyUbwXwfqbs0REma58gl7qCOOmBRDUxGlOryxdHGph4Hj4MK9GcDazEwARAQAB
-tC5QcmFuamFsIEp1bWRlIChEZW1vKSA8cHJhbmphbC5qdW1kZUBnbWFpbC5jb20+
-iQJOBBMBCAA4FiEE07dgRmQdLCde+McomT2q8CmO1P4FAlqrIn4CGwMFCwkIBwIG
-FQoJCAsCBBYCAwECHgECF4AACgkQmT2q8CmO1P7PkQ/+KLBGeErNQTV0I6dvSTdd
-KfQTcLmc1xnGIqcCYP1evu54XmZmHJwr6O7TdRovo/ycotKeKbZLug6QTr9Az+uv
-Gd1hL3WC4D+67KDbJHupCowW3RPKYmhHTgvKC74czN5IzAX8CsjtXMSWbCS9iqgG
-QewQJsfHvvFG+r1HwUs37N7L0Oev1g2qzdP+pLOKwAgA62o7xUtUIQETUPjO1D9P
-G09G2QPLGwEQwPOaSk2dom5bmHBBVkAXXrWmgZ8cDdIJJxGcFneRcIYBhA6wxAGz
-vOKnTWYN6W4OC4X4TDUhrUTdwCjoScBdrX4GAbolWeI++d23b/6PL47HtnGiTl64
-KtvmKKSqSvImOHBT78GmI0mdZ9VBfbyr5blC/wuww/Du3ahVvdsFv+30HEpsOaUd
-CyK7A3wiT0O+69M7SpTMhA2/QU3AHZfPDo9EGCAgh9xeljN2Thcqxl+vyAWBteVv
-5PUXs46rHU3F1dqHLlGlHTZwY6MOcTSPegHIGV+vZoJwfuj8IQbw/x0712SUJzvX
-c4HsBsePkJe3TaRVqVdAysCRK3a/pVDp9Rcf2FCRTXdDKBZeli28/0md81CiGFHf
-EaoW/JFFy6d91iW+RB2E8GefYDpa9+JrheUSDV3aPoWprX3yQiIeWz5jpINsQStm
-akWrUSRBaq7kcZeMJnJRysA=
-=GCo9
------END PGP PUBLIC KEY BLOCK-----`
 
 var channels = { nightly: true, developer: true, beta: true, dev: true }
 if (!channels[channel]) {
@@ -175,6 +144,7 @@ cmds = cmds.concat([
 ])
 
 function BuildManifestFile () {
+  const fs = require('fs')
   const fileContents = fs.readFileSync('./res/Update.VisualElementsManifest.xml', 'utf8')
   const versionedFileContents = fileContents.replace(/{{braveVersion}}/g, 'app-' + VersionInfo.braveVersion)
   fs.writeFileSync('temp.VisualElementsManifest.xml', versionedFileContents, 'utf8')
@@ -208,8 +178,7 @@ if (isDarwin) {
 cmds.push('mkdirp ' + torPath)
 cmds.push('curl -o ' + path.join(torPath, 'tor') + ' ' + torURL)
 cmds.push('curl -o ' + path.join(torPath, 'tor-sig') + ' ' + torSigURL)
-fs.writeFileSync('temp.asc', torVerificationPublicKey, 'utf8')
-cmds.push('gpg --import temp.asc')
+cmds.push('gpg --import .\\res\\keys\\key.pub ')
 cmds.push('gpg --verify ' + path.join(torPath, 'tor-sig') + ' ' + path.join(torPath, 'tor'))
 cmds.push('rm -rf temp.asc')
 
