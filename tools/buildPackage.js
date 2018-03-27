@@ -178,7 +178,8 @@ if (isDarwin) {
 cmds.push('mkdirp ' + torPath)
 cmds.push('curl -o ' + path.join(torPath, 'tor') + ' ' + torURL)
 cmds.push('curl -o ' + path.join(torPath, 'tor-sig') + ' ' + torSigURL)
-cmds.push('gpg --import .\\res\\keys\\key.pub ')
+cmds.push('ncp ./res/keys/key.pub ' + path.join(buildDir, 'resources'))
+cmds.push('gpg --import ' + path.join(buildDir, 'resources', 'key.pub'))
 cmds.push('gpg --verify ' + path.join(torPath, 'tor-sig') + ' ' + path.join(torPath, 'tor'))
 cmds.push('rm -rf temp.asc')
 
