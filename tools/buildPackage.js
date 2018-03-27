@@ -180,7 +180,7 @@ cmds.push('mkdirp ' + path.join(buildDir, 'resources', 'keys'))
 cmds.push('curl -o ' + path.join(torPath, 'tor') + ' ' + torURL)
 cmds.push('curl -o ' + path.join(torPath, 'tor-sig') + ' ' + torSigURL)
 cmds.push('ncp ./res/keys/ ' + path.join(buildDir, 'resources', 'keys'))
-cmds.push('gpg --import ' + path.join(buildDir, 'resources', 'keys', 'key.pub'))
+cmds.push('gpg --import ' + path.join(buildDir, 'resources', 'keys', 'tor-demo-key.pub'))
 cmds.push('gpg --verify ' + path.join(torPath, 'tor-sig') + ' ' + path.join(torPath, 'tor'))
 
 if (isWindows) {
